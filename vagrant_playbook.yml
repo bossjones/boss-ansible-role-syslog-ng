@@ -1,9 +1,9 @@
 ---
 ##############################################################################
-# SERVERS: Install and configure rsyslogd
+# SERVERS: Install and configure syslog-ng
 ##############################################################################
 - hosts: servers
-  name: bootstrap servers before running rsyslogd
+  name: bootstrap servers before running syslog-ng
   gather_facts: True
   become: yes
   become_method: sudo
@@ -96,106 +96,83 @@
       tags:
         - boss-ansible-role-tools
 
-- hosts: masters
-  name: (masters) - Install and configure rsyslogd
-  gather_facts: True
-  become: yes
-  become_method: sudo
-  environment:
-    DEBIAN_FRONTEND: noninteractive
-  vars:
-    boss__ntp__timezone: 'America/New_York'
-
-  roles:
-    - role: ../
-      boss__syslogng__default_task: 'master'
-      boss__rsyslod__rsyslog_interface: 'enp0s8'
-      # NOTE: https://docs.debops.org/en/master/ansible/roles/debops.rsyslog/getting-started.html
-      # Enable network input channels and storage of remote logs in filesystem
-      boss__syslogng__syslogng_capabilities: [ 'network', 'remote-files' ]
-
-      # Specify which subnets can send remote logs through the firewall
-      # FIXME: https://blog.webernetz.net/2001db8-32-in-the-wild/
-      # boss__syslogng__host_allow: [ '192.0.2.0/24', '2001:db8::/32' ]
-      boss__syslogng__syslogng_host_allow: [ '192.168.1.1/16' ]
-
-      # SOURCE: https://www.rsyslog.com/sending-messages-to-a-remote-syslog-server/
-      # Mask log forwarding configuration defined elsewhere
-      boss__syslogng__syslogng_forward:
-        - '*.*  action(type="omfwd" target="{{boss__syslogng__syslogng_master_ip}}" port="{{boss__syslogng__syslogng_tcp_port}}" protocol="tcp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")'
-      # *.*  action(type="omfwd" target="192.0.2.2" port="10514" protocol="tcp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")
-      # this will de-couple the sending from the other logging actions,
-      # and prevent delays when the remote system is not reachable. Also,
-      # it will try to connect 100 times before it discards messages as
-      # undeliverable.
-      # the rest below is more or less a plain vanilla rsyslog.conf as
-      # many distros ship it - it's more for your reference...
-      boss__syslogng__syslogng_group_forward: []
-      # boss__syslogng__host_forward: []
-      # boss__syslogng__syslogng_host_forward:
-      #   - '*.*  action(type="omfwd" target="{{boss__syslogng__syslogng_master_ip}}" port="{{boss__syslogng__syslogng_tcp_port}}" protocol="tcp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")'
-
-      # Or, alternatively, forward logs to a different host
-      # boss__syslogng__host_forward: [ '*.* @other.{{ ansible_domain }}' ]
-
-      # Or, alternatively, forward logs to a different host
-      # boss__syslogng__syslogng_host_forward: [ '*.* @other.{{ ansible_domain }}' ]
-      # {{ hostvars[groups[boss__syslogng__master_group_label][0]]['ansible_' + boss__kubernetes__kubeadm__nfs_interface].ipv4.address }}:{{ item.remote }}
-
-      # {% if etcd_discovery == none and etcd_discovery_srv == none -%}
-      # {% macro initial_cluster() -%}
-      # {% for host in groups[etcd_peers_group] -%}
-      #   {% if loop.last -%}
-      # {{ host }}={{ etcd_peer_url_scheme }}://{{ hostvars[host][  "ansible_"+hostvars[host]["ansible_default_ipv4"]["interface"]  ]['ipv4']['address'] }}:{{ etcd_peer_port }}
-      #   {%- else -%}
-      # {{ host }}={{ etcd_peer_url_scheme }}://{{ hostvars[host][ "ansible_"+hostvars[host]["ansible_default_ipv4"]["interface"]  ]['ipv4']['address'] }}:{{ etcd_peer_port }},
-      #   {%- endif -%}
-      # {% endfor -%}
-      # {% endmacro -%}
-      # {% endif %}
-
-      tags:
-        - boss-ansible-role-rsyslogd
-
-
-- hosts: nodes
-  name: (nodes) - Install and configure rsyslogd
-  gather_facts: True
-  become: yes
-  become_method: sudo
-  environment:
-    DEBIAN_FRONTEND: noninteractive
-  vars:
-    boss__ntp__timezone: 'America/New_York'
-
-  roles:
-    - role: ../
-      boss__syslogng__default_task: 'client'
-      boss__rsyslod__rsyslog_interface: 'enp0s8'
-      boss__syslogng__syslogng_forward:
-        - '*.*  action(type="omfwd" target="{{boss__syslogng__syslogng_master_ip}}" port="{{boss__syslogng__syslogng_tcp_port}}" protocol="tcp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")'
-      tags:
-        - boss-ansible-role-rsyslogd
-
-# - hosts: nodes
-#   name: (nodes) - Install and configure tmuxinator
+# - hosts: masters
+#   name: (masters) - Install and configure syslog-ng
 #   gather_facts: True
-#   become: no
+#   become: yes
 #   become_method: sudo
-#   vars:
-#     bossjones__user: vagrant
-#     bossjones__group: vagrant
 #   environment:
 #     DEBIAN_FRONTEND: noninteractive
-#   tags:
-#     - ruby
-#     - nodes
-#     - servers
-#     - rvm
-#     - install
-#     - node_install
+#   vars:
+#     boss__ntp__timezone: 'America/New_York'
+
 #   roles:
 #     - role: ../
-#       task: monitor
-#       boss__nfs__master_node_ip: '192.168.50.110'
-#       boss__nfs__nfs_interface: 'enp0s8'
+#       boss__syslogng__default_task: 'master'
+#       boss__rsyslod__rsyslog_interface: 'enp0s8'
+#       # NOTE: https://docs.debops.org/en/master/ansible/roles/debops.rsyslog/getting-started.html
+#       # Enable network input channels and storage of remote logs in filesystem
+#       boss__syslogng__syslogng_capabilities: [ 'network', 'remote-files' ]
+
+#       # Specify which subnets can send remote logs through the firewall
+#       # FIXME: https://blog.webernetz.net/2001db8-32-in-the-wild/
+#       # boss__syslogng__host_allow: [ '192.0.2.0/24', '2001:db8::/32' ]
+#       boss__syslogng__syslogng_host_allow: [ '192.168.1.1/16' ]
+
+#       # SOURCE: https://www.rsyslog.com/sending-messages-to-a-remote-syslog-server/
+#       # Mask log forwarding configuration defined elsewhere
+#       boss__syslogng__syslogng_forward:
+#         - '*.*  action(type="omfwd" target="{{boss__syslogng__syslogng_master_ip}}" port="{{boss__syslogng__syslogng_tcp_port}}" protocol="tcp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")'
+#       # *.*  action(type="omfwd" target="192.0.2.2" port="10514" protocol="tcp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")
+#       # this will de-couple the sending from the other logging actions,
+#       # and prevent delays when the remote system is not reachable. Also,
+#       # it will try to connect 100 times before it discards messages as
+#       # undeliverable.
+#       # the rest below is more or less a plain vanilla rsyslog.conf as
+#       # many distros ship it - it's more for your reference...
+#       boss__syslogng__syslogng_group_forward: []
+#       # boss__syslogng__host_forward: []
+#       # boss__syslogng__syslogng_host_forward:
+#       #   - '*.*  action(type="omfwd" target="{{boss__syslogng__syslogng_master_ip}}" port="{{boss__syslogng__syslogng_tcp_port}}" protocol="tcp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")'
+
+#       # Or, alternatively, forward logs to a different host
+#       # boss__syslogng__host_forward: [ '*.* @other.{{ ansible_domain }}' ]
+
+#       # Or, alternatively, forward logs to a different host
+#       # boss__syslogng__syslogng_host_forward: [ '*.* @other.{{ ansible_domain }}' ]
+#       # {{ hostvars[groups[boss__syslogng__master_group_label][0]]['ansible_' + boss__kubernetes__kubeadm__nfs_interface].ipv4.address }}:{{ item.remote }}
+
+#       # {% if etcd_discovery == none and etcd_discovery_srv == none -%}
+#       # {% macro initial_cluster() -%}
+#       # {% for host in groups[etcd_peers_group] -%}
+#       #   {% if loop.last -%}
+#       # {{ host }}={{ etcd_peer_url_scheme }}://{{ hostvars[host][  "ansible_"+hostvars[host]["ansible_default_ipv4"]["interface"]  ]['ipv4']['address'] }}:{{ etcd_peer_port }}
+#       #   {%- else -%}
+#       # {{ host }}={{ etcd_peer_url_scheme }}://{{ hostvars[host][ "ansible_"+hostvars[host]["ansible_default_ipv4"]["interface"]  ]['ipv4']['address'] }}:{{ etcd_peer_port }},
+#       #   {%- endif -%}
+#       # {% endfor -%}
+#       # {% endmacro -%}
+#       # {% endif %}
+
+#       tags:
+#         - boss-ansible-role-syslog-ng
+
+
+# - hosts: nodes
+#   name: (nodes) - Install and configure syslog-ng
+#   gather_facts: True
+#   become: yes
+#   become_method: sudo
+#   environment:
+#     DEBIAN_FRONTEND: noninteractive
+#   vars:
+#     boss__ntp__timezone: 'America/New_York'
+
+#   roles:
+#     - role: ../
+#       boss__syslogng__default_task: 'client'
+#       boss__rsyslod__rsyslog_interface: 'enp0s8'
+#       boss__syslogng__syslogng_forward:
+#         - '*.*  action(type="omfwd" target="{{boss__syslogng__syslogng_master_ip}}" port="{{boss__syslogng__syslogng_tcp_port}}" protocol="tcp" action.resumeRetryCount="100" queue.type="linkedList" queue.size="10000")'
+#       tags:
+#         - boss-ansible-role-syslog-ng
