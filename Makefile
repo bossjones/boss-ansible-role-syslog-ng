@@ -26,7 +26,7 @@ URL_PATH_DASHBOARD         := "http://localhost:8001/api/v1/namespaces/kube-syst
 PR_SHA                := $(shell git rev-parse HEAD)
 
 define ASCILOGO
-boss-ansible-role-rsyslogd
+boss-ansible-role-syslog-ng
 =======================================
 endef
 

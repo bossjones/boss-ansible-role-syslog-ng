@@ -6,7 +6,7 @@
 
 boss__syslogng__master_group_label: 'masters'
 
-boss__syslogng__default_task: 'master'
+boss__syslogng__default_task: 'facts'
 boss__syslogng__syslogng_enabled: True
 
 # boss__syslogng__syslogng_interface: 'enp0s8'
