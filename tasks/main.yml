@@ -1,0 +1,3 @@
+---
+
+- include_tasks: "{{boss__syslogng__default_task}}.yml"

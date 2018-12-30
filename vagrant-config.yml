@@ -1,0 +1,35 @@
+# https://gist.github.com/gnarf/b103e77f37236ca72d8e
+:vms:
+  syslog-ng-master-01:
+    :hostname: "syslog-ng-master-01"
+    :ip: "192.168.50.110"
+    :ram: 2048
+    :cpu: 2
+    :box: "ubuntu/xenial64"
+    :id: 10
+
+  syslog-ng-worker-01:
+    :hostname: "syslog-ng-worker-01"
+    :ip: "192.168.50.111"
+    :ram: 2048
+    :cpu: 2
+    :box: "ubuntu/xenial64"
+    :id: 11
+
+:groups:
+  syslog-ng-master-01:
+    - syslog-ng-master-01
+  slaves:
+    - syslog-ng-worker-01
+  agents:
+    - syslog-ng-worker-01
+  servers:
+    - syslog-ng-master-01
+    - syslog-ng-worker-01
+  kubernetes-syslog-ng-master-01:
+    - syslog-ng-master-01
+  kubernetes-workers:
+    - syslog-ng-worker-01
+  kubernetes:
+    - syslog-ng-master-01
+    - syslog-ng-worker-01
